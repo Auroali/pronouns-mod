@@ -1,14 +1,8 @@
 package com.auroali.pronouns;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.minecraft.nbt.NbtByteArray;
-import net.minecraft.world.WorldEvents;
-import org.quiltmc.qsl.lifecycle.api.event.ServerWorldLoadEvents;
 
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.zip.GZIPInputStream;
@@ -82,14 +76,6 @@ public class PlayerPronouns {
 		} finally {
 			setDirty(false);
 		}
-	}
-
-	private void writeInt(int val, OutputStream stream) throws IOException {
-		stream.write(ByteBuffer.allocate(Integer.BYTES).putInt(val).array());
-	}
-
-	private void writeLong(long val, OutputStream stream) throws IOException {
-		stream.write(ByteBuffer.allocate(Long.BYTES).putLong(val).array());
 	}
 
 	public void setDirty() {
