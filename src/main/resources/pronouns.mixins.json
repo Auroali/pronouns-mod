@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.auroali.pronouns.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "MessageTypeMixin",
+    "MinecraftServerMixin"
+  ],
+  "client": [
+    "client.PlayerEntityRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}
