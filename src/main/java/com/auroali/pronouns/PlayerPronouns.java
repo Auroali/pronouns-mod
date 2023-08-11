@@ -18,7 +18,6 @@ public class PlayerPronouns {
 		pronounsMap = new Object2ObjectOpenHashMap<>();
 		this.file = file;
 		load();
-
 	}
 
 	public void load() {

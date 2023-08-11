@@ -1,6 +1,7 @@
 package com.auroali.pronouns.mixin.client;
 
 import com.auroali.pronouns.PronounsMod;
+import com.auroali.pronouns.PronounsModClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -35,7 +36,7 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
 	)
 	protected void pronouns$renderLabelIfPresent(AbstractClientPlayerEntity abstractClientPlayerEntity, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci, double d) {
 		String pronouns;
-		if(d < 4096.0 && (pronouns = PronounsMod.pronouns.getPronouns(abstractClientPlayerEntity.getUuid())) != null) {
+		if(d < 4096.0 && (pronouns = PronounsModClient.PRONOUNS_MAP.get(abstractClientPlayerEntity.getUuid())) != null) {
 			super.renderLabelIfPresent(abstractClientPlayerEntity, Text.literal(pronouns), matrixStack, vertexConsumerProvider, i);
 			Objects.requireNonNull(this.getTextRenderer());
 			matrixStack.translate(0.0, 9.0F * 1.15F * 0.025F, 0.0);

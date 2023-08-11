@@ -1,11 +1,13 @@
 package com.auroali.pronouns.mixin;
 
 import com.auroali.pronouns.PronounsMod;
+import com.auroali.pronouns.PronounsModClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.MessageType;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -19,9 +21,9 @@ public class MessageTypeMixin {
 	private static Text pronouns$m_cjdjzedr(Entity instance) {
 		Text text;
 		if((text = instance.getDisplayName()) instanceof MutableText mutableText && instance instanceof PlayerEntity entity) {
-			String pronouns = PronounsMod.pronouns.getPronouns(entity.getUuid());
+			String pronouns = PronounsModClient.PRONOUNS_MAP.get(entity.getUuid());
 			if(pronouns != null)
-				text = mutableText.append(Text.literal(" (%s)".formatted(pronouns)));
+				text = mutableText.append(Text.literal(" %s".formatted(pronouns)).formatted(Formatting.ITALIC));
 		}
 		return text;
 	}
