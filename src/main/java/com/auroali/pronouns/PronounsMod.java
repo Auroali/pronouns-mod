@@ -40,7 +40,7 @@ public class PronounsMod implements ModInitializer {
 				sendPronouns(playNetworkHandler.player, playNetworkHandler.player.getUuid());
 		});
 
-		EntityTrackingEvents.START_TRACKING.register((trackedEntity, player) -> {
+		EntityTrackingEvents.AFTER_START_TRACKING.register((trackedEntity, player) -> {
 			if(trackedEntity instanceof PlayerEntity entity && pronouns.getPronouns(entity.getUuid()) != null) {
 				sendPronouns(player, entity.getUuid());
 			}
@@ -57,7 +57,7 @@ public class PronounsMod implements ModInitializer {
 					PronounsMod.pronouns.setPronouns(entity.getUuid(), pronouns);
 					sendPronouns(entity, entity.getUuid());
 					sendPronounsNear(entity, entity.getUuid());
-					ctx.getSource().sendFeedback(Text.translatable("pronouns.set", Text.literal(pronouns).setStyle(Style.EMPTY.withBold(true).withColor(Formatting.GREEN))), true);
+					ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.set", Text.literal(pronouns).setStyle(Style.EMPTY.withBold(true).withColor(Formatting.GREEN))), true);
 					return 0;
 				})))
 			.then(CommandManager.literal("get")
@@ -68,9 +68,9 @@ public class PronounsMod implements ModInitializer {
 							return -1;
 						String pronouns = PronounsMod.pronouns.getPronouns(entity.getUuid());
 						if(pronouns != null)
-							ctx.getSource().sendFeedback(Text.translatable("pronouns.query", entity.getName(), pronouns), false);
+							ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.query", entity.getName(), pronouns), false);
 						else {
-							ctx.getSource().sendFeedback(Text.translatable("pronouns.query.none", entity.getName()), false);
+							ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.query.none", entity.getName()), false);
 						}
 						return 0;
 					}))
