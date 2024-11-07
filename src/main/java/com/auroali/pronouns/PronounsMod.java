@@ -51,9 +51,10 @@ public class PronounsMod implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(RequestPronounsC2S.ID, (packet, player, responseSender) -> {
             MinecraftServer server = player.getServer();
             PronounsCache cache = PronounsCache.getCache(server);
-            cache.get(packet.requestedPronouns()).ifPresent(pronouns -> {
-                responseSender.sendPacket(new SendPronounsS2C(packet.requestedPronouns(), pronouns));
-            });
+            cache.getAfterLoad(packet.requestedPronouns()).ifPresentOrElse(
+              pronouns -> responseSender.sendPacket(new SendPronounsS2C(packet.requestedPronouns(), pronouns)),
+              () -> responseSender.sendPacket(new SendPronounsS2C(packet.requestedPronouns(), null))
+            );
         });
 
 

@@ -37,6 +37,13 @@ public class ServerPronounsCache implements PronounsCache {
     }
 
     @Override
+    public Optional<String> getAfterLoad(UUID uuid) {
+        if(pending.containsKey(uuid))
+            pending.get(uuid).join();
+        return get(uuid);
+    }
+
+    @Override
     public void loadAsync(UUID uuid, Consumer<Optional<String>> consumer) {
         if (this.pending.containsKey(uuid)) {
             this.pending.put(

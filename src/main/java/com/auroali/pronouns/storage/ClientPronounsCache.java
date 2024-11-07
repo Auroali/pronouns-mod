@@ -20,6 +20,11 @@ public class ClientPronounsCache implements PronounsCache {
     }
 
     @Override
+    public Optional<String> getAfterLoad(UUID uuid) {
+        return get(uuid);
+    }
+
+    @Override
     public void loadAsync(UUID uuid, Consumer<Optional<String>> consumer) {
         List<Consumer<Optional<String>>> consumers = pending.computeIfAbsent(uuid, key -> new ArrayList<>());
         consumers.add(consumer);
