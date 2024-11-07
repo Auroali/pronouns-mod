@@ -53,7 +53,6 @@ public class LegacyPlayerPronouns {
         }
     }
 
-    // TODO: Rework saving/loading
     public void save() {
         try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(file))))) {
             stream.writeInt(HEADER_VALIDATION_MARKER);

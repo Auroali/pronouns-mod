@@ -41,23 +41,12 @@ public class PronounsMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
-//        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-//            File pronounsFile = server.getSavePath(WorldSavePath.ROOT).resolve("pronouns.dat").toFile();
-//            pronouns = new LegacyPlayerPronouns(pronounsFile);
-//        });
-//
         ServerPlayConnectionEvents.INIT.register((playNetworkHandler, server) -> {
             PronounsCache cache = PronounsCache.getCache(server);
             cache.loadAsync(playNetworkHandler.getPlayer().getUuid(), optional ->
               optional.ifPresent(pronouns -> cache.set(playNetworkHandler.getPlayer().getUuid(), pronouns))
             );
         });
-//
-//        EntityTrackingEvents.START_TRACKING.register((trackedEntity, player) -> {
-//            if (trackedEntity instanceof PlayerEntity entity && pronouns.getPronouns(entity.getUuid()) != null) {
-//                sendPronouns(player, entity.getUuid());
-//            }
-//        });
 
         ServerPlayNetworking.registerGlobalReceiver(RequestPronounsC2S.ID, (packet, player, responseSender) -> {
             MinecraftServer server = player.getServer();
