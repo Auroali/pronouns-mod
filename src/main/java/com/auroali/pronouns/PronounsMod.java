@@ -86,6 +86,7 @@ public class PronounsMod implements ModInitializer {
                       PlayerLookup.tracking(entity).forEach(p -> {
                           ServerPlayNetworking.send(p, packet);
                       });
+                      ServerPlayNetworking.send(entity, packet);
 
                       ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.set", Text.literal(pronouns).setStyle(Style.EMPTY.withColor(Formatting.GREEN))), true);
                       return 0;

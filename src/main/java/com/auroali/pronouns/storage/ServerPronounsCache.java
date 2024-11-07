@@ -33,7 +33,7 @@ public class ServerPronounsCache implements PronounsCache {
 
     @Override
     public Optional<String> get(UUID uuid) {
-        return Optional.empty();
+        return pronouns.containsKey(uuid) ? Optional.of(pronouns.get(uuid)) : Optional.empty();
     }
 
     @Override

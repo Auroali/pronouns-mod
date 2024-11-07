@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class ClientPronounsCache implements PronounsCache {
-    private final Map<UUID, String> pronouns = new WeakHashMap<>();
+    private final Map<UUID, String> pronouns = new HashMap<>();
     private final Map<UUID, List<Consumer<Optional<String>>>> pending = new HashMap<>();
 
     public ClientPronounsCache() {
@@ -42,5 +42,13 @@ public class ClientPronounsCache implements PronounsCache {
         if (pending.containsKey(uuid))
             pending.get(uuid).forEach(consumer -> consumer.accept(value));
         pending.remove(uuid);
+    }
+
+    public void clearPendingConsumers() {
+        this.pronouns.clear();
+    }
+
+    public void clearCachedValues() {
+        this.pronouns.clear();
     }
 }
