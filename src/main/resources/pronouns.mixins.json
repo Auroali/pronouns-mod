@@ -8,9 +8,10 @@
     "MinecraftServerMixin"
   ],
   "client": [
+    "MinecraftClientMixin",
     "client.PlayerEntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-	}
+  }
 }

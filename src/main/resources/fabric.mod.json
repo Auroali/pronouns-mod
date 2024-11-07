@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "pronouns",
+  "version": "${version}",
+  "name": "Pronouns",
+  "description": "Mod that allows setting pronouns",
+  "authors": [
+    "Auroali"
+  ],
+  "contact": {
+    "sources": "https://github.com/Auroali/pronouns-mod"
+  },
+  "license": "MIT",
+  "icon": "assets/pronouns/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.auroali.pronouns.PronounsMod"
+    ],
+    "client": [
+      "com.auroali.pronouns.PronounsModClient"
+    ]
+  },
+  "mixins": [
+    "pronouns.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.9",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*"
+  },
+  "suggests": {
+  }
+}
