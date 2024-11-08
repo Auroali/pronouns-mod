@@ -5,8 +5,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 public interface PronounsCache {
+    int DATAVERSION = 1;
     Optional<String> get(UUID uuid);
-    Optional<String> getAfterLoad(UUID uuid);
 
     void loadAsync(UUID uuid, Consumer<Optional<String>> consumer);
 

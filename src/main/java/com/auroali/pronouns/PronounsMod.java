@@ -43,15 +43,24 @@ public class PronounsMod implements ModInitializer {
     public void onInitialize() {
         ServerPlayConnectionEvents.INIT.register((playNetworkHandler, server) -> {
             PronounsCache cache = PronounsCache.getCache(server);
-            cache.loadAsync(playNetworkHandler.getPlayer().getUuid(), optional ->
-              optional.ifPresent(pronouns -> cache.set(playNetworkHandler.getPlayer().getUuid(), pronouns))
+            ServerPlayerEntity playerEntity = playNetworkHandler.getPlayer();
+            cache.loadAsync(playerEntity.getUuid(), optional ->
+              optional.ifPresent(pronouns -> {
+                  cache.set(playerEntity.getUuid(), pronouns);
+                  // sync the loaded pronouns to the client
+                  // this has to be done after setting pronouns, as sometimes clients can
+                  // load a player before pronouns have finished loading
+                  UpdatePronounsS2C packet = new UpdatePronounsS2C(playerEntity.getUuid(), pronouns);
+                  PlayerLookup.tracking(playerEntity).forEach(p -> ServerPlayNetworking.send(p, packet));
+                  ServerPlayNetworking.send(playerEntity, packet);
+              })
             );
         });
 
         ServerPlayNetworking.registerGlobalReceiver(RequestPronounsC2S.ID, (packet, player, responseSender) -> {
             MinecraftServer server = player.getServer();
             PronounsCache cache = PronounsCache.getCache(server);
-            cache.getAfterLoad(packet.requestedPronouns()).ifPresentOrElse(
+            cache.get(packet.requestedPronouns()).ifPresentOrElse(
               pronouns -> responseSender.sendPacket(new SendPronounsS2C(packet.requestedPronouns(), pronouns)),
               () -> responseSender.sendPacket(new SendPronounsS2C(packet.requestedPronouns(), null))
             );

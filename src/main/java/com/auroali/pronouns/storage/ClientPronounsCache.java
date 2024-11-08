@@ -20,11 +20,6 @@ public class ClientPronounsCache implements PronounsCache {
     }
 
     @Override
-    public Optional<String> getAfterLoad(UUID uuid) {
-        return get(uuid);
-    }
-
-    @Override
     public void loadAsync(UUID uuid, Consumer<Optional<String>> consumer) {
         List<Consumer<Optional<String>>> consumers = pending.computeIfAbsent(uuid, key -> new ArrayList<>());
         consumers.add(consumer);
@@ -34,11 +29,13 @@ public class ClientPronounsCache implements PronounsCache {
 
     @Override
     public void set(UUID uuid, String pronouns) {
-        if (pronouns == null) {
-            this.pronouns.remove(uuid);
-            return;
+        synchronized (this.pronouns) {
+            if (pronouns == null) {
+                this.pronouns.remove(uuid);
+                return;
+            }
+            this.pronouns.put(uuid, pronouns);
         }
-        this.pronouns.put(uuid, pronouns);
     }
 
 

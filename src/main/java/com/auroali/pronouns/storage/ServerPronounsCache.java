@@ -37,13 +37,6 @@ public class ServerPronounsCache implements PronounsCache {
     }
 
     @Override
-    public Optional<String> getAfterLoad(UUID uuid) {
-        if(pending.containsKey(uuid))
-            pending.get(uuid).join();
-        return get(uuid);
-    }
-
-    @Override
     public void loadAsync(UUID uuid, Consumer<Optional<String>> consumer) {
         if (this.pending.containsKey(uuid)) {
             this.pending.put(
@@ -67,6 +60,7 @@ public class ServerPronounsCache implements PronounsCache {
 
     Optional<String> readPronounsFile(File file) {
         try (DataInputStream stream = new DataInputStream(new FileInputStream(file))) {
+            stream.readInt();
             return Optional.of(stream.readUTF());
         } catch (IOException e) {
             LOGGER.error("Failed to read pronouns file!", e);
@@ -76,6 +70,8 @@ public class ServerPronounsCache implements PronounsCache {
 
     void writePronounsFile(File file, String pronouns) {
         try (DataOutputStream stream = new DataOutputStream(new FileOutputStream(file))) {
+            // store the data version, in case there's any format changes down the line
+            stream.writeInt(PronounsCache.DATAVERSION);
             stream.writeUTF(pronouns);
         } catch (IOException e) {
             LOGGER.error("Failed to write pronouns file!", e);
@@ -104,6 +100,7 @@ public class ServerPronounsCache implements PronounsCache {
         oldPronouns.pronounsMap.forEach(this::set);
         if (file.delete())
             LOGGER.info("Successfully updated old pronouns files");
+        save();
     }
 
     File getPronounsFile(UUID uuid) {
@@ -112,13 +109,15 @@ public class ServerPronounsCache implements PronounsCache {
 
     @Override
     public void set(UUID uuid, String pronouns) {
-        lastModified = System.currentTimeMillis();
-        if (pronouns == null) {
-            this.pronouns.remove(uuid);
-            this.removed.add(uuid);
-            return;
+        synchronized (this.pronouns) {
+            lastModified = System.currentTimeMillis();
+            if (pronouns == null) {
+                this.pronouns.remove(uuid);
+                this.removed.add(uuid);
+                return;
+            }
+            this.pronouns.put(uuid, pronouns);
+            removed.remove(uuid);
         }
-        this.pronouns.put(uuid, pronouns);
-        removed.remove(uuid);
     }
 }
