@@ -33,14 +33,14 @@ public class PronounsModClient implements ClientModInitializer {
         ClientEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
             MinecraftClient client = MinecraftClient.getInstance();
             PronounsCache cache = PronounsCache.getCache(client);
-            if(entity instanceof PlayerEntity) {
+            if (entity instanceof PlayerEntity) {
                 cache.set(entity.getUuid(), null);
             }
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             PronounsCache cache = PronounsCache.getCache(client);
-            if(cache instanceof ClientPronounsCache clientCache) {
+            if (cache instanceof ClientPronounsCache clientCache) {
                 clientCache.clearPendingConsumers();
                 clientCache.clearCachedValues();
             }

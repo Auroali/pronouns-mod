@@ -12,7 +12,8 @@ import java.util.UUID;
  * <br> This differs from UpdatePronounsS2C in how it is handled,
  * this packet is used as the response for loadAsync in the client cache while
  * UpdatePronounsS2C directly sets the pronouns
- * @param player the uuid of the target player
+ *
+ * @param player   the uuid of the target player
  * @param pronouns the pronouns to use
  */
 public record SendPronounsS2C(UUID player, String pronouns) implements FabricPacket {

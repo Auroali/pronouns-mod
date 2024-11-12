@@ -1,6 +1,5 @@
 package com.auroali.pronouns.mixin.client;
 
-import com.auroali.pronouns.PronounsMod;
 import com.auroali.pronouns.storage.PronounsCache;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
