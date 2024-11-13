@@ -81,6 +81,10 @@ public class ServerPronounsCache implements PronounsCache {
      * <br> Should only be called from save, internal use only
      */
     void dropUnusedEntries() {
+        // if theres no entries, theres nothing to drop
+        if (pronouns.isEmpty())
+            return;
+
         Set<UUID> playerUuids = this.server.getPlayerManager()
           .getPlayerList()
           .stream()
