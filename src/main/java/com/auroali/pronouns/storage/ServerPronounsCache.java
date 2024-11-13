@@ -1,6 +1,7 @@
 package com.auroali.pronouns.storage;
 
 import com.auroali.pronouns.storage.legacy.LegacyPlayerPronouns;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
 import net.minecraft.util.WorldSavePath;
@@ -12,9 +13,13 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ServerPronounsCache implements PronounsCache {
     protected static Logger LOGGER = LoggerFactory.getLogger("Pronouns Cache | Server");
+    public static final int MAX_PRONOUNS_LENGTH = 64;
     private final Map<UUID, String> pronouns = new HashMap<>();
     private final Set<UUID> removed = new HashSet<>();
     private final Map<UUID, CompletableFuture<Optional<String>>> pending = new HashMap<>();
@@ -29,6 +34,7 @@ public class ServerPronounsCache implements PronounsCache {
         this.executor = executor;
         this.pronounsDir = pronounsDir;
         updateOldPronouns(server);
+        // todo: make the server cache drop pronouns when players log out
     }
 
     @Override
@@ -61,10 +67,29 @@ public class ServerPronounsCache implements PronounsCache {
     Optional<String> readPronounsFile(File file) {
         try (DataInputStream stream = new DataInputStream(new FileInputStream(file))) {
             stream.readInt();
-            return Optional.of(stream.readUTF());
+            // make sure the loaded string fits within the character limit
+            String pronounsString = validatePronounsString(stream.readUTF());
+            return Optional.of(pronounsString);
         } catch (IOException e) {
             LOGGER.error("Failed to read pronouns file!", e);
             return Optional.empty();
+        }
+    }
+
+    /**
+     * Drops any unused cache entries
+     * <br> Should only be called from save, internal use only
+     */
+    void dropUnusedEntries() {
+        Set<UUID> playerUuids = this.server.getPlayerManager()
+          .getPlayerList()
+          .stream()
+          .map(PlayerEntity::getUuid)
+          .collect(Collectors.toSet());
+
+        synchronized (this.pronouns) {
+            // remove any entries that lack a corresponding player
+            this.pronouns.keySet().removeIf(Predicate.not(playerUuids::contains));
         }
     }
 
@@ -90,6 +115,7 @@ public class ServerPronounsCache implements PronounsCache {
             writePronounsFile(file, pronouns);
         });
         this.lastSaved = System.currentTimeMillis();
+        dropUnusedEntries();
     }
 
     public void updateOldPronouns(MinecraftServer server) {
@@ -109,6 +135,7 @@ public class ServerPronounsCache implements PronounsCache {
 
     @Override
     public void set(UUID uuid, String pronouns) {
+        pronouns = validatePronounsString(pronouns);
         synchronized (this.pronouns) {
             lastModified = System.currentTimeMillis();
             if (pronouns == null) {
@@ -119,5 +146,13 @@ public class ServerPronounsCache implements PronounsCache {
             this.pronouns.put(uuid, pronouns);
             removed.remove(uuid);
         }
+    }
+
+    protected String validatePronounsString(String pronouns) {
+        if (pronouns.length() > MAX_PRONOUNS_LENGTH) {
+            LOGGER.warn("Pronoun string {} over max character limit of {} characters! This will be trimmed.", pronouns, MAX_PRONOUNS_LENGTH);
+            return pronouns.substring(0, MAX_PRONOUNS_LENGTH);
+        }
+        return pronouns;
     }
 }
