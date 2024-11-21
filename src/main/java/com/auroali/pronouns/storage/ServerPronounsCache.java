@@ -15,10 +15,9 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ServerPronounsCache implements PronounsCache {
-    protected static Logger LOGGER = LoggerFactory.getLogger("Pronouns Cache | Server");
+    protected static final Logger LOGGER = LoggerFactory.getLogger("Pronouns Cache | Server");
     public static final int MAX_PRONOUNS_LENGTH = 64;
     private final Map<UUID, String> pronouns = new HashMap<>();
     private final Set<UUID> removed = new HashSet<>();
@@ -66,10 +65,23 @@ public class ServerPronounsCache implements PronounsCache {
 
     Optional<String> readPronounsFile(File file) {
         try (DataInputStream stream = new DataInputStream(new FileInputStream(file))) {
-            stream.readInt();
+            int dataVersion = stream.readInt();
+            if (dataVersion != PronounsCache.DATAVERSION) {
+                LOGGER.warn("Outdated pronouns file {}", file.getName());
+            }
+            return switch (dataVersion) {
+                // dataversion 1
+                case 1 -> {
+                    String pronounsString = validatePronounsString(stream.readUTF());
+                    yield Optional.of(pronounsString);
+                }
+                default -> {
+                    LOGGER.error("Unknown dataversion {} in pronouns file {}", dataVersion, file.getName());
+                    yield Optional.empty();
+                }
+            };
             // make sure the loaded string fits within the character limit
-            String pronounsString = validatePronounsString(stream.readUTF());
-            return Optional.of(pronounsString);
+
         } catch (IOException e) {
             LOGGER.error("Failed to read pronouns file!", e);
             return Optional.empty();

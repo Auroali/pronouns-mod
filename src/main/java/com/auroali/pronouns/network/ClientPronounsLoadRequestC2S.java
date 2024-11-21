@@ -7,10 +7,10 @@ import net.minecraft.network.PacketByteBuf;
 
 import java.util.UUID;
 
-public record RequestPronounsC2S(UUID requestedPronouns) implements FabricPacket {
-    public static final PacketType<RequestPronounsC2S> ID = PacketType.create(PronounsMod.id("request_pronouns"), RequestPronounsC2S::new);
+public record ClientPronounsLoadRequestC2S(UUID requestedPronouns) implements FabricPacket {
+    public static final PacketType<ClientPronounsLoadRequestC2S> ID = PacketType.create(PronounsMod.id("request_pronouns"), ClientPronounsLoadRequestC2S::new);
 
-    public RequestPronounsC2S(PacketByteBuf buf) {
+    public ClientPronounsLoadRequestC2S(PacketByteBuf buf) {
         this(buf.readUuid());
     }
 

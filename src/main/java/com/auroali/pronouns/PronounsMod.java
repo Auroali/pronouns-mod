@@ -1,7 +1,7 @@
 package com.auroali.pronouns;
 
-import com.auroali.pronouns.network.RequestPronounsC2S;
-import com.auroali.pronouns.network.SendPronounsS2C;
+import com.auroali.pronouns.network.ClientPronounsLoadRequestC2S;
+import com.auroali.pronouns.network.ClientPronounsLoadRequestS2C;
 import com.auroali.pronouns.network.UpdatePronounsS2C;
 import com.auroali.pronouns.storage.PronounsCache;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -43,64 +43,72 @@ public class PronounsMod implements ModInitializer {
                   // sync the loaded pronouns to the client
                   // this has to be done after setting pronouns, as sometimes clients can
                   // load a player before pronouns have finished loading
-                  UpdatePronounsS2C packet = new UpdatePronounsS2C(playerEntity.getUuid(), pronouns);
+                  UpdatePronounsS2C packet = new UpdatePronounsS2C(playerEntity.getUuid(), optional);
                   PlayerLookup.tracking(playerEntity).forEach(p -> ServerPlayNetworking.send(p, packet));
                   ServerPlayNetworking.send(playerEntity, packet);
               })
             );
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(RequestPronounsC2S.ID, (packet, player, responseSender) -> {
+        ServerPlayNetworking.registerGlobalReceiver(ClientPronounsLoadRequestC2S.ID, (packet, player, responseSender) -> {
             MinecraftServer server = player.getServer();
             PronounsCache cache = PronounsCache.getCache(server);
-            cache.get(packet.requestedPronouns()).ifPresentOrElse(
-              pronouns -> responseSender.sendPacket(new SendPronounsS2C(packet.requestedPronouns(), pronouns)),
-              () -> responseSender.sendPacket(new SendPronounsS2C(packet.requestedPronouns(), null))
-            );
+            Optional<String> pronouns = cache.get(packet.requestedPronouns());
+            responseSender.sendPacket(new ClientPronounsLoadRequestS2C(packet.requestedPronouns(), pronouns));
         });
 
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, environment) -> {
-            dispatcher.register(CommandManager.literal("pronouns")
-              .then(CommandManager.literal("set")
-                .then(CommandManager.argument("pronouns", StringArgumentType.greedyString())
-                  .executes(ctx -> {
-                      if (!ctx.getSource().isExecutedByPlayer())
-                          return 1;
+        CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, environment) ->
+          dispatcher.register(CommandManager.literal("pronouns")
+            .then(CommandManager.literal("set")
+              .then(CommandManager.argument("pronouns", StringArgumentType.greedyString())
+                .executes(ctx -> {
+                    if (!ctx.getSource().isExecutedByPlayer())
+                        return 1;
 
-                      String pronouns = StringArgumentType.getString(ctx, "pronouns");
-                      ServerPlayerEntity entity = ctx.getSource().getPlayer();
+                    String pronouns = StringArgumentType.getString(ctx, "pronouns");
+                    ServerPlayerEntity entity = ctx.getSource().getPlayer();
 
-                      PronounsCache cache = PronounsCache.getCache(ctx.getSource().getServer());
-                      cache.set(entity.getUuid(), pronouns);
+                    PronounsCache cache = PronounsCache.getCache(ctx.getSource().getServer());
+                    cache.set(entity.getUuid(), pronouns);
 
-                      UpdatePronounsS2C packet = new UpdatePronounsS2C(entity.getUuid(), pronouns);
-                      PlayerLookup.tracking(entity).forEach(p -> {
-                          ServerPlayNetworking.send(p, packet);
-                      });
-                      ServerPlayNetworking.send(entity, packet);
+                    UpdatePronounsS2C packet = new UpdatePronounsS2C(entity.getUuid(), Optional.of(pronouns));
+                    PlayerLookup.tracking(entity).forEach(p ->
+                      ServerPlayNetworking.send(p, packet)
+                    );
+                    ServerPlayNetworking.send(entity, packet);
 
-                      ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.set", Text.literal(pronouns).setStyle(Style.EMPTY.withColor(Formatting.GREEN))), true);
-                      return 0;
-                  })))
-              .then(CommandManager.literal("get")
-                .then(CommandManager.argument("player", EntityArgumentType.player())
-                  .executes(ctx -> {
-                      PlayerEntity entity = EntityArgumentType.getPlayer(ctx, "player");
-                      if (entity == null)
-                          return -1;
+                    ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.set", Text.literal(pronouns).setStyle(Style.EMPTY.withColor(Formatting.GREEN))), true);
+                    return 0;
+                })))
+            .then(CommandManager.literal("clear")
+              .executes(ctx -> {
+                  if (!ctx.getSource().isExecutedByPlayer())
+                      return 1;
 
-                      PronounsCache cache = PronounsCache.getCache(ctx.getSource().getServer());
-                      Optional<String> pronounsOptional = cache.get(entity.getUuid());
-                      pronounsOptional.ifPresentOrElse(
-                        pronouns -> ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.query", entity.getName(), pronouns), false),
-                        () -> ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.query.none", entity.getName()), false)
-                      );
-                      return 0;
-                  }))
+                  PronounsCache cache = PronounsCache.getCache(ctx.getSource().getServer());
+                  cache.set(ctx.getSource().getPlayer().getUuid(), null);
+                  return 0;
+              })
+            )
+            .then(CommandManager.literal("get")
+              .then(CommandManager.argument("player", EntityArgumentType.player())
+                .executes(ctx -> {
+                    PlayerEntity entity = EntityArgumentType.getPlayer(ctx, "player");
+                    if (entity == null)
+                        return -1;
 
-              )
-            );
-        });
+                    PronounsCache cache = PronounsCache.getCache(ctx.getSource().getServer());
+                    Optional<String> pronounsOptional = cache.get(entity.getUuid());
+                    pronounsOptional.ifPresentOrElse(
+                      pronouns -> ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.query", entity.getName(), pronouns), false),
+                      () -> ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.query.none", entity.getName()), false)
+                    );
+                    return 0;
+                }))
+
+            )
+          )
+        );
     }
 }

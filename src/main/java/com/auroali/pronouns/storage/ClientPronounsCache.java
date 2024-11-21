@@ -1,6 +1,6 @@
 package com.auroali.pronouns.storage;
 
-import com.auroali.pronouns.network.RequestPronounsC2S;
+import com.auroali.pronouns.network.ClientPronounsLoadRequestC2S;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
 import java.util.*;
@@ -24,7 +24,7 @@ public class ClientPronounsCache implements PronounsCache {
         List<Consumer<Optional<String>>> consumers = pending.computeIfAbsent(uuid, key -> new ArrayList<>());
         consumers.add(consumer);
         if (consumers.size() == 1)
-            ClientPlayNetworking.send(new RequestPronounsC2S(uuid));
+            ClientPlayNetworking.send(new ClientPronounsLoadRequestC2S(uuid));
     }
 
     @Override

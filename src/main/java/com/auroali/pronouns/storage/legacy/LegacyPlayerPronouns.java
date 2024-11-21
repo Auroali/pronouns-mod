@@ -14,7 +14,6 @@ public class LegacyPlayerPronouns {
     private static final int HEADER_VALIDATION_MARKER = 0x50524e53;
     protected final File file;
     public final Object2ObjectOpenHashMap<UUID, String> pronounsMap;
-    protected boolean isDirty;
 
     public LegacyPlayerPronouns(File file) {
         pronounsMap = new Object2ObjectOpenHashMap<>();
@@ -23,10 +22,9 @@ public class LegacyPlayerPronouns {
     }
 
     public void load() {
-        if (!file.exists()) {
-            save();
+        if (!file.exists())
             return;
-        }
+
         try (DataInputStream stream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))))) {
             int header = stream.readInt();
             if (header != HEADER_VALIDATION_MARKER) {
@@ -48,62 +46,6 @@ public class LegacyPlayerPronouns {
         } catch (Exception e) {
             PronounsMod.LOGGER.error("An error occurred whilst loading the pronouns file!");
             PronounsMod.LOGGER.error(String.valueOf(e));
-            PronounsMod.LOGGER.warn("Old pronouns file will be overwritten.");
-            save();
         }
-    }
-
-    public void save() {
-        try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(file))))) {
-            stream.writeInt(HEADER_VALIDATION_MARKER);
-            stream.writeInt(pronounsMap.size());
-            pronounsMap.object2ObjectEntrySet().fastForEach(e -> {
-                long least = e.getKey().getLeastSignificantBits();
-                long most = e.getKey().getMostSignificantBits();
-                try {
-                    stream.writeLong(least);
-                    stream.writeLong(most);
-                    byte[] str = e.getValue().getBytes(StandardCharsets.UTF_8);
-                    stream.writeInt(str.length);
-                    stream.write(str);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            });
-        } catch (Exception e) {
-            PronounsMod.LOGGER.error("An error occurred whilst saving the pronouns file!");
-            PronounsMod.LOGGER.error(String.valueOf(e));
-        } finally {
-            setDirty(false);
-        }
-    }
-
-    private void writeInt(int val, OutputStream stream) throws IOException {
-        stream.write(ByteBuffer.allocate(Integer.BYTES).putInt(val).array());
-    }
-
-    private void writeLong(long val, OutputStream stream) throws IOException {
-        stream.write(ByteBuffer.allocate(Long.BYTES).putLong(val).array());
-    }
-
-    public void setDirty() {
-        setDirty(true);
-    }
-
-    public boolean isDirty() {
-        return isDirty;
-    }
-
-    public void setDirty(boolean dirty) {
-        this.isDirty = dirty;
-    }
-
-    public String getPronouns(UUID uuid) {
-        return pronounsMap.get(uuid);
-    }
-
-    public synchronized void setPronouns(UUID uuid, String pronouns) {
-        pronounsMap.put(uuid, pronouns);
-        setDirty();
     }
 }

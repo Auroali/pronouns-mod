@@ -1,6 +1,6 @@
 package com.auroali.pronouns;
 
-import com.auroali.pronouns.network.SendPronounsS2C;
+import com.auroali.pronouns.network.ClientPronounsLoadRequestS2C;
 import com.auroali.pronouns.network.UpdatePronounsS2C;
 import com.auroali.pronouns.storage.ClientPronounsCache;
 import com.auroali.pronouns.storage.PronounsCache;
@@ -10,8 +10,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
-
-import java.util.Optional;
 
 public class PronounsModClient implements ClientModInitializer {
     @Override
@@ -46,19 +44,18 @@ public class PronounsModClient implements ClientModInitializer {
             }
         });
 
-        ClientPlayNetworking.registerGlobalReceiver(SendPronounsS2C.ID, (packet, player, responseSender) -> {
+        ClientPlayNetworking.registerGlobalReceiver(ClientPronounsLoadRequestS2C.ID, (packet, player, responseSender) -> {
             MinecraftClient client = MinecraftClient.getInstance();
             PronounsCache cache = PronounsCache.getCache(client);
             if (cache instanceof ClientPronounsCache clientCache) {
-                Optional<String> pronounsOptional = packet.pronouns() != null ? Optional.of(packet.pronouns()) : Optional.empty();
-                clientCache.processPendingConsumers(packet.player(), pronounsOptional);
+                clientCache.processPendingConsumers(packet.player(), packet.pronouns());
             }
         });
 
         ClientPlayNetworking.registerGlobalReceiver(UpdatePronounsS2C.ID, (packet, player, responseSender) -> {
             MinecraftClient client = MinecraftClient.getInstance();
             PronounsCache cache = PronounsCache.getCache(client);
-            cache.set(packet.player(), packet.pronouns());
+            cache.set(packet.player(), packet.pronouns().orElse(null));
         });
     }
 }

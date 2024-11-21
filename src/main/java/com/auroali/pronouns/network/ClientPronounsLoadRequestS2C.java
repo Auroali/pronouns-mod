@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.PacketByteBuf;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -16,19 +17,17 @@ import java.util.UUID;
  * @param player   the uuid of the target player
  * @param pronouns the pronouns to use
  */
-public record SendPronounsS2C(UUID player, String pronouns) implements FabricPacket {
-    public static final PacketType<SendPronounsS2C> ID = PacketType.create(PronounsMod.id("send_pronouns"), SendPronounsS2C::new);
+public record ClientPronounsLoadRequestS2C(UUID player, Optional<String> pronouns) implements FabricPacket {
+    public static final PacketType<ClientPronounsLoadRequestS2C> ID = PacketType.create(PronounsMod.id("send_pronouns"), ClientPronounsLoadRequestS2C::new);
 
-    public SendPronounsS2C(PacketByteBuf buf) {
-        this(buf.readUuid(), buf.readBoolean() ? buf.readString() : null);
+    public ClientPronounsLoadRequestS2C(PacketByteBuf buf) {
+        this(buf.readUuid(), buf.readOptional(PacketByteBuf::readString));
     }
 
     @Override
     public void write(PacketByteBuf buf) {
         buf.writeUuid(player);
-        buf.writeBoolean(pronouns != null);
-        if (pronouns != null)
-            buf.writeString(pronouns);
+        buf.writeOptional(pronouns, PacketByteBuf::writeString);
     }
 
     @Override
