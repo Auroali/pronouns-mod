@@ -151,7 +151,6 @@ public class ServerPronounsCache implements PronounsCache {
 
     @Override
     public void set(UUID uuid, String pronouns) {
-        pronouns = validatePronounsString(pronouns);
         synchronized (this.pronouns) {
             lastModified = System.currentTimeMillis();
             if (pronouns == null) {
@@ -159,6 +158,7 @@ public class ServerPronounsCache implements PronounsCache {
                 this.removed.add(uuid);
                 return;
             }
+            pronouns = validatePronounsString(pronouns);
             this.pronouns.put(uuid, pronouns);
             removed.remove(uuid);
         }
