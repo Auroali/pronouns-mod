@@ -78,7 +78,7 @@ public class PronounsMod implements ModInitializer {
                     );
                     ServerPlayNetworking.send(entity, packet);
 
-                    ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.set", Text.literal(pronouns).setStyle(Style.EMPTY.withColor(Formatting.GREEN))), true);
+                    ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.set", Text.literal(pronouns).formatted(Formatting.GREEN)), true);
                     return 0;
                 })))
             .then(CommandManager.literal("clear")
@@ -88,6 +88,7 @@ public class PronounsMod implements ModInitializer {
 
                   PronounsCache cache = PronounsCache.getCache(ctx.getSource().getServer());
                   cache.set(ctx.getSource().getPlayer().getUuid(), null);
+                  ctx.getSource().sendMessage(Text.translatable("pronouns.clear").formatted(Formatting.GREEN));
                   return 0;
               })
             )

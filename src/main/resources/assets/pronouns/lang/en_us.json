@@ -1,5 +1,6 @@
 {
   "pronouns.query": "%s's pronouns are %s",
   "pronouns.query.none": "%s has not set any pronouns",
-  "pronouns.set": "Your pronouns have been updated to %s"
+  "pronouns.set": "Your pronouns have been updated to %s",
+  "pronouns.clear": "Your pronouns have been cleared"
 }
