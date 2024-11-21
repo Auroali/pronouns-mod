@@ -85,8 +85,15 @@ public class PronounsMod implements ModInitializer {
                   if (!ctx.getSource().isExecutedByPlayer())
                       return 1;
 
+                  ServerPlayerEntity entity = ctx.getSource().getPlayer();
                   PronounsCache cache = PronounsCache.getCache(ctx.getSource().getServer());
-                  cache.set(ctx.getSource().getPlayer().getUuid(), null);
+                  cache.set(entity.getUuid(), null);
+
+                  UpdatePronounsS2C packet = new UpdatePronounsS2C(entity.getUuid(), Optional.empty());
+                  PlayerLookup.tracking(entity).forEach(p ->
+                    ServerPlayNetworking.send(p, packet)
+                  );
+                  ServerPlayNetworking.send(entity, packet);
                   ctx.getSource().sendFeedback(() -> Text.translatable("pronouns.clear").formatted(Formatting.GREEN), false);
                   return 0;
               })
