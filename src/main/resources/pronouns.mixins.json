@@ -8,7 +8,7 @@
     "MinecraftServerMixin"
   ],
   "client": [
-    "MinecraftClientMixin",
+    "client.MinecraftClientMixin",
     "client.PlayerEntityRendererMixin"
   ],
   "injectors": {

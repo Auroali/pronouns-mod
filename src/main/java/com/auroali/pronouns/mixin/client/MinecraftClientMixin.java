@@ -1,4 +1,4 @@
-package com.auroali.pronouns.mixin;
+package com.auroali.pronouns.mixin.client;
 
 import com.auroali.pronouns.storage.ClientPronounsCache;
 import com.auroali.pronouns.storage.PronounsCache;
