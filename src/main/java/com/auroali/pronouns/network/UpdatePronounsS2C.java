@@ -17,8 +17,8 @@ public record UpdatePronounsS2C(UUID player, Optional<String> pronouns) implemen
 
     @Override
     public void write(PacketByteBuf buf) {
-        buf.writeUuid(player);
-        buf.writeOptional(pronouns, PacketByteBuf::writeString);
+        buf.writeUuid(this.player);
+        buf.writeOptional(this.pronouns, PacketByteBuf::writeString);
     }
 
     @Override

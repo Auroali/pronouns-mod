@@ -16,7 +16,7 @@ public record ClientPronounsLoadRequestC2S(UUID requestedPronouns) implements Fa
 
     @Override
     public void write(PacketByteBuf buf) {
-        buf.writeUuid(requestedPronouns);
+        buf.writeUuid(this.requestedPronouns);
     }
 
     @Override

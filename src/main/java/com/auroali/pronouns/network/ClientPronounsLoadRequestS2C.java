@@ -26,8 +26,8 @@ public record ClientPronounsLoadRequestS2C(UUID player, Optional<String> pronoun
 
     @Override
     public void write(PacketByteBuf buf) {
-        buf.writeUuid(player);
-        buf.writeOptional(pronouns, PacketByteBuf::writeString);
+        buf.writeUuid(this.player);
+        buf.writeOptional(this.pronouns, PacketByteBuf::writeString);
     }
 
     @Override

@@ -21,7 +21,7 @@ public class ClientPronounsCache implements PronounsCache {
 
     @Override
     public void loadAsync(UUID uuid, Consumer<Optional<String>> consumer) {
-        List<Consumer<Optional<String>>> consumers = pending.computeIfAbsent(uuid, key -> new ArrayList<>());
+        List<Consumer<Optional<String>>> consumers = this.pending.computeIfAbsent(uuid, key -> new ArrayList<>());
         consumers.add(consumer);
         if (consumers.size() == 1)
             ClientPlayNetworking.send(new ClientPronounsLoadRequestC2S(uuid));
@@ -41,9 +41,9 @@ public class ClientPronounsCache implements PronounsCache {
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public void processPendingConsumers(UUID uuid, Optional<String> value) {
-        if (pending.containsKey(uuid))
-            pending.get(uuid).forEach(consumer -> consumer.accept(value));
-        pending.remove(uuid);
+        if (this.pending.containsKey(uuid))
+            this.pending.get(uuid).forEach(consumer -> consumer.accept(value));
+        this.pending.remove(uuid);
     }
 
     public void clearPendingConsumers() {

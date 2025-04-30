@@ -4,6 +4,7 @@ import com.auroali.pronouns.network.ClientPronounsLoadRequestC2S;
 import com.auroali.pronouns.network.ClientPronounsLoadRequestS2C;
 import com.auroali.pronouns.network.UpdatePronounsS2C;
 import com.auroali.pronouns.storage.PronounsCache;
+import com.auroali.pronouns.storage.ServerPronounsCache;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -22,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class PronounsMod implements ModInitializer {
     public static final String MODID = "pronouns";
@@ -47,6 +49,14 @@ public class PronounsMod implements ModInitializer {
                   ServerPlayNetworking.send(playerEntity, packet);
               })
             );
+        });
+
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            UUID uuid = handler.getPlayer().getUuid();
+            PronounsCache cache = PronounsCache.getCache(server);
+            if(cache instanceof ServerPronounsCache serverPronounsCache) {
+                serverPronounsCache.markForRemoval(uuid);
+            }
         });
 
         ServerPlayNetworking.registerGlobalReceiver(ClientPronounsLoadRequestC2S.ID, (packet, player, responseSender) -> {

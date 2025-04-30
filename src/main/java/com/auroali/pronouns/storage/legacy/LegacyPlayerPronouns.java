@@ -16,13 +16,13 @@ public class LegacyPlayerPronouns {
     public final Object2ObjectOpenHashMap<UUID, String> pronounsMap;
 
     public LegacyPlayerPronouns(File file) {
-        pronounsMap = new Object2ObjectOpenHashMap<>();
+        this.pronounsMap = new Object2ObjectOpenHashMap<>();
         this.file = file;
-        load();
+        this.load();
     }
 
     public void load() {
-        if (!file.exists())
+        if (!this.file.exists())
             return;
 
         try (DataInputStream stream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))))) {
@@ -41,7 +41,7 @@ public class LegacyPlayerPronouns {
                 if (len != strLen) {
                     throw new IOException("String length mismatch! Expected %d, got %d".formatted(len, strLen));
                 }
-                pronounsMap.put(playerUUID, new String(str, StandardCharsets.UTF_8));
+                this.pronounsMap.put(playerUUID, new String(str, StandardCharsets.UTF_8));
             }
         } catch (Exception e) {
             PronounsMod.LOGGER.error("An error occurred whilst loading the pronouns file!");
